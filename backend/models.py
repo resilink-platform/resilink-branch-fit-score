@@ -5,9 +5,9 @@ from typing import List
 class BranchFitRequest(BaseModel):
     answers: List[int] = Field(
         ...,
-        description="Exactly 35 integers, each between 1 and 5 (Likert scale).",
-        min_length=35,
-        max_length=35,
+        description="Exactly 40 integers, each between 1 and 5 (Likert scale).",
+        min_length=40,
+        max_length=40,
     )
 
     @field_validator("answers")

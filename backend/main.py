@@ -31,7 +31,7 @@ def health():
 @app.get("/questions", tags=["Questions"])
 def get_questions():
     """
-    Return all 35 psychometric questions in order.
+    Return all 40 psychometric questions in order.
     Frontend renders these one-by-one and collects answers (1–5).
     """
     return {
@@ -46,11 +46,11 @@ def get_questions():
 @app.post("/branch-fit", response_model=BranchFitResponse, tags=["Scoring"])
 def compute_branch_fit(request: BranchFitRequest):
     """
-    Submit 35 answers and receive a ranked list of the top 5 specialty matches.
+    Submit 40 answers and receive a ranked list of the top 5 specialty matches.
 
     **Request body**
     ```json
-    { "answers": [3, 4, 5, 2, ...] }   // exactly 35 integers, each 1–5
+    { "answers": [3, 4, 5, 2, ...] }   // exactly 40 integers, each 1–5
     ```
 
     **Response**

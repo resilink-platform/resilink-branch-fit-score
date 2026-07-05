@@ -11,29 +11,45 @@ DIMENSIONS = [
     "stamina",
 ]
 
+# ---------------------------------------------------------------------------
+# DESIGN NOTES (why this set is more stable than the previous 35)
+#   1. No comparative framing ("X more than Y"). Each item probes ONE concept.
+#      Relative preference is recovered by the mean-centered scorer, not by
+#      forcing the respondent to weigh two options in their head.
+#   2. No double-barreled items (no "A or B" joined into one statement).
+#   3. No hypotheticals / conditionals ("I would... if..."). All items are
+#      present-tense trait statements, which drift far less day-to-day.
+#   4. Exactly one reverse-scored item per dimension (two for work_life_balance)
+#      to catch straight-lining / careless responding.
+#
+#   SCALE ASSUMPTION: raw 5 = "Strongly agree", raw 1 = "Strongly disagree".
+#   Reverse scoring is adj = 6 - raw. This ONLY works if the frontend SCALE
+#   array sends v:5 for "Strongly agree". Fix that mismatch before testing.
+# ---------------------------------------------------------------------------
+
 QUESTIONS = [
     # ── Procedural (4) ──────────────────────────────────────────────────────
     {
         "id": 1,
-        "text": "I enjoy performing hands-on procedures more than sitting and analyzing data.",
+        "text": "I enjoy performing hands-on procedures.",
         "dimension": "procedural",
         "reverse": False,
     },
     {
         "id": 2,
-        "text": "I get more satisfaction from doing a physical task skillfully than from solving a diagnostic puzzle.",
+        "text": "Doing a physical task skillfully gives me a strong sense of satisfaction.",
         "dimension": "procedural",
         "reverse": False,
     },
     {
         "id": 3,
-        "text": "Working with instruments and tools excites me more than reading or thinking.",
+        "text": "I look forward to work that involves operating, suturing, or other manual interventions.",
         "dimension": "procedural",
         "reverse": False,
     },
     {
         "id": 4,
-        "text": "I prefer a career where I'm thinking and reasoning deeply over one where I'm operating or cutting.",
+        "text": "A role built mostly around hands-on procedures would leave me unfulfilled.",
         "dimension": "procedural",
         "reverse": True,
     },
@@ -41,204 +57,234 @@ QUESTIONS = [
     # ── Patient interaction (4) ──────────────────────────────────────────────
     {
         "id": 5,
-        "text": "I find long conversations with patients and their families energizing, not draining.",
+        "text": "Long conversations with patients and their families energize me.",
         "dimension": "patient_interaction",
         "reverse": False,
     },
     {
         "id": 6,
-        "text": "Building long-term relationships with patients is something I deeply value.",
+        "text": "Building long-term relationships with patients matters deeply to me.",
         "dimension": "patient_interaction",
         "reverse": False,
     },
     {
         "id": 7,
-        "text": "I prefer a work style where I spend most of my time with reports or imaging rather than directly with patients.",
+        "text": "Counseling patients through difficult emotional situations comes naturally to me.",
         "dimension": "patient_interaction",
-        "reverse": True,
+        "reverse": False,
     },
     {
         "id": 8,
-        "text": "Counseling patients through emotional or difficult situations comes naturally to me.",
+        "text": "I would prefer a role where I spend most of my time away from direct patient contact.",
         "dimension": "patient_interaction",
-        "reverse": False,
+        "reverse": True,
     },
 
     # ── Work-life balance (4) ────────────────────────────────────────────────
     {
         "id": 9,
-        "text": "Having predictable working hours is very important to my quality of life.",
+        "text": "Predictable working hours are very important to my quality of life.",
         "dimension": "work_life_balance",
         "reverse": False,
     },
     {
         "id": 10,
-        "text": "I'm comfortable regularly sacrificing personal or family time for my career.",
-        "dimension": "work_life_balance",
-        "reverse": True,
-    },
-    {
-        "id": 11,
-        "text": "A specialty that gives me time for hobbies, travel, or family matters a great deal to me.",
+        "text": "Having time for family, hobbies, and rest strongly influences my career choices.",
         "dimension": "work_life_balance",
         "reverse": False,
     },
     {
+        "id": 11,
+        "text": "I am willing to give up personal time on a regular basis for my work.",
+        "dimension": "work_life_balance",
+        "reverse": True,
+    },
+    {
         "id": 12,
-        "text": "I'd be okay being on call most weekends and nights if the specialty suited me otherwise.",
+        "text": "I am comfortable being on call through nights and weekends.",
         "dimension": "work_life_balance",
         "reverse": True,
     },
 
-    # ── Stress tolerance (3) ────────────────────────────────────────────────
+    # ── Stress tolerance (4) ────────────────────────────────────────────────
     {
         "id": 13,
-        "text": "I perform at my best when the stakes are high and there's pressure to decide quickly.",
+        "text": "I stay composed when the pressure is high and decisions must be made quickly.",
         "dimension": "stress_tolerance",
         "reverse": False,
     },
     {
         "id": 14,
-        "text": "I stay calm and focused when managing multiple critical or deteriorating patients simultaneously.",
+        "text": "I remain focused when managing several critical patients at once.",
         "dimension": "stress_tolerance",
         "reverse": False,
     },
     {
         "id": 15,
-        "text": "Uncertainty and unpredictability in my day-to-day work is something I handle well.",
+        "text": "I handle uncertainty and unpredictability in my work well.",
         "dimension": "stress_tolerance",
         "reverse": False,
     },
-
-    # ── Manual dexterity (3) ────────────────────────────────────────────────
     {
         "id": 16,
-        "text": "I enjoy tasks that require precise hand-eye coordination and fine motor control.",
-        "dimension": "manual_dexterity",
-        "reverse": False,
+        "text": "Sustained high-pressure situations leave me drained and unsettled.",
+        "dimension": "stress_tolerance",
+        "reverse": True,
     },
+
+    # ── Manual dexterity (4) ────────────────────────────────────────────────
     {
         "id": 17,
-        "text": "I'm confident in my ability to perform delicate, detailed physical work accurately.",
+        "text": "I am confident in my fine motor skills and hand-eye coordination.",
         "dimension": "manual_dexterity",
         "reverse": False,
     },
     {
         "id": 18,
-        "text": "Working with my hands to achieve a precise outcome gives me a sense of deep satisfaction.",
+        "text": "I can perform delicate, detailed physical tasks accurately.",
         "dimension": "manual_dexterity",
         "reverse": False,
     },
-
-    # ── Academic / research (4) ──────────────────────────────────────────────
     {
         "id": 19,
-        "text": "I genuinely enjoy reading research papers and staying updated with the latest clinical literature.",
-        "dimension": "academic",
+        "text": "Precise handwork is something I do well and trust myself with.",
+        "dimension": "manual_dexterity",
         "reverse": False,
     },
     {
         "id": 20,
-        "text": "I see myself teaching, mentoring, or training junior doctors as part of my career.",
-        "dimension": "academic",
-        "reverse": False,
+        "text": "Tasks requiring very fine, steady hand control are difficult for me.",
+        "dimension": "manual_dexterity",
+        "reverse": True,
     },
+
+    # ── Academic / research (4) ──────────────────────────────────────────────
     {
         "id": 21,
-        "text": "Understanding the underlying mechanism of a disease deeply interests me beyond just treating it.",
+        "text": "I enjoy reading research papers and keeping up with clinical literature.",
         "dimension": "academic",
         "reverse": False,
     },
     {
         "id": 22,
-        "text": "I'd enjoy working in an academic medical institution more than a purely clinical private setup.",
+        "text": "Teaching or mentoring junior doctors appeals to me.",
         "dimension": "academic",
         "reverse": False,
     },
-
-    # ── Emergency readiness (3) ──────────────────────────────────────────────
     {
         "id": 23,
-        "text": "I thrive in emergency situations where I need to make quick, high-stakes decisions.",
-        "dimension": "emergency",
+        "text": "Understanding the underlying mechanism of a disease fascinates me.",
+        "dimension": "academic",
         "reverse": False,
     },
     {
         "id": 24,
-        "text": "Fast-paced, adrenaline-fueled work environments motivate me more than calm, routine ones.",
-        "dimension": "emergency",
-        "reverse": False,
-    },
-    {
-        "id": 25,
-        "text": "I'm fully comfortable making life-or-death decisions under time pressure.",
-        "dimension": "emergency",
-        "reverse": False,
+        "text": "I have little interest in the research side of medicine.",
+        "dimension": "academic",
+        "reverse": True,
     },
 
-    # ── Tech affinity (3) ────────────────────────────────────────────────────
+    # ── Emergency readiness (4) ──────────────────────────────────────────────
+    {
+        "id": 25,
+        "text": "I thrive in acute emergencies that demand split-second decisions.",
+        "dimension": "emergency",
+        "reverse": False,
+    },
     {
         "id": 26,
-        "text": "I find working with advanced medical equipment, imaging, or diagnostic technology fascinating.",
-        "dimension": "tech_affinity",
+        "text": "Fast-paced, high-adrenaline environments motivate me.",
+        "dimension": "emergency",
         "reverse": False,
     },
     {
         "id": 27,
-        "text": "A role where technology and precision instruments are central to daily work appeals to me.",
-        "dimension": "tech_affinity",
+        "text": "I am comfortable making life-or-death decisions under time pressure.",
+        "dimension": "emergency",
         "reverse": False,
     },
     {
         "id": 28,
-        "text": "I enjoy understanding how medical devices or imaging systems work at a technical level.",
-        "dimension": "tech_affinity",
-        "reverse": False,
+        "text": "I would rather avoid work centered on acute emergencies.",
+        "dimension": "emergency",
+        "reverse": True,
     },
 
-    # ── Income priority (4) ──────────────────────────────────────────────────
+    # ── Tech affinity (4) ────────────────────────────────────────────────────
     {
         "id": 29,
-        "text": "High earning potential is one of the most important factors in my specialty choice.",
-        "dimension": "income",
+        "text": "Working with advanced medical equipment and imaging fascinates me.",
+        "dimension": "tech_affinity",
         "reverse": False,
     },
     {
         "id": 30,
-        "text": "Financial security for myself and my family is a top priority in my career decisions.",
-        "dimension": "income",
+        "text": "I enjoy understanding how medical devices work at a technical level.",
+        "dimension": "tech_affinity",
         "reverse": False,
     },
     {
         "id": 31,
-        "text": "I would choose a lower-paying specialty if it aligned with my passion and values.",
-        "dimension": "income",
-        "reverse": True,
+        "text": "A role where technology is central to daily work appeals to me.",
+        "dimension": "tech_affinity",
+        "reverse": False,
     },
     {
         "id": 32,
-        "text": "Private practice income potential is a significant consideration for me.",
-        "dimension": "income",
-        "reverse": False,
+        "text": "I have little interest in the technical or equipment side of medicine.",
+        "dimension": "tech_affinity",
+        "reverse": True,
     },
 
-    # ── Physical stamina (3) ─────────────────────────────────────────────────
+    # ── Income priority (4) ──────────────────────────────────────────────────
     {
         "id": 33,
-        "text": "I can stand and remain focused for 6–8 hours of continuous work without difficulty.",
-        "dimension": "stamina",
+        "text": "High earning potential strongly influences my specialty choice.",
+        "dimension": "income",
         "reverse": False,
     },
     {
         "id": 34,
-        "text": "Long surgical procedures or physically demanding shifts don't intimidate me.",
-        "dimension": "stamina",
+        "text": "Financial security is a top priority in my career decisions.",
+        "dimension": "income",
         "reverse": False,
     },
     {
         "id": 35,
-        "text": "Physical exhaustion after an intense shift doesn't demotivate me from coming back the next day.",
+        "text": "Private practice income potential matters a great deal to me.",
+        "dimension": "income",
+        "reverse": False,
+    },
+    {
+        "id": 36,
+        "text": "Income is only a minor factor in how I choose my specialty.",
+        "dimension": "income",
+        "reverse": True,
+    },
+
+    # ── Physical stamina (4) ─────────────────────────────────────────────────
+    {
+        "id": 37,
+        "text": "I can stay on my feet and stay focused for many hours without difficulty.",
         "dimension": "stamina",
         "reverse": False,
+    },
+    {
+        "id": 38,
+        "text": "Physically demanding shifts do not intimidate me.",
+        "dimension": "stamina",
+        "reverse": False,
+    },
+    {
+        "id": 39,
+        "text": "I recover quickly and stay motivated after an intense, exhausting shift.",
+        "dimension": "stamina",
+        "reverse": False,
+    },
+    {
+        "id": 40,
+        "text": "Long hours of physical work wear me down quickly.",
+        "dimension": "stamina",
+        "reverse": True,
     },
 ]

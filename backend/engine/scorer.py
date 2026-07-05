@@ -5,7 +5,7 @@ from data.profiles import SPECIALTY_PROFILES, DIM_LABELS
 
 def compute_dimension_scores(answers: list[int]) -> dict[str, float]:
     """
-    Convert 35 raw Likert answers (1–5) into 10 dimension scores (0–10).
+    Convert 40 raw Likert answers (1–5) into 10 dimension scores (0–10).
 
     Steps:
     1. Reverse-score flagged questions:  adj = 6 - raw
@@ -40,6 +40,28 @@ def cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
     return float(np.dot(vec_a, vec_b) / (norm_a * norm_b))
 
 
+def mean_centered_cosine(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
+    """
+    Pearson-correlation similarity (mean-centered cosine).
+
+    WHY: Raw cosine on all-positive vectors always produces 95–99% because
+    any two vectors pointing "generally upward" look similar. Subtracting
+    each vector's own mean centers them around 0, so only vectors with a
+    matching *shape* (same peaks/valleys across dimensions) score high.
+
+    Result: scores spread naturally across ~40–90% range.
+    Negative correlations (opposite profiles) are clamped to 0.
+    """
+    a = vec_a - vec_a.mean()   # center aspirant around their own average
+    b = vec_b - vec_b.mean()   # center specialty around its own average
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
+    if norm_a == 0 or norm_b == 0:
+        # Flat vector (all dims equal) — no profile shape to compare
+        return 0.0
+    return max(0.0, float(np.dot(a, b) / (norm_a * norm_b)))
+
+
 def get_matched_mismatched(
     aspirant: dict[str, float],
     specialty: dict[str, int],
@@ -71,7 +93,7 @@ def rank_specialties(answers: list[int]) -> dict:
     Main entry point.
 
     Args:
-        answers: List of 35 integers (1–5), one per question in order.
+        answers: List of 40 integers (1–5), one per question in order.
 
     Returns:
         {
@@ -88,7 +110,7 @@ def rank_specialties(answers: list[int]) -> dict:
         sp_scores = data["scores"]
         sp_vector = np.array([sp_scores[d] for d in DIMENSIONS])
 
-        fit_pct  = round(cosine_similarity(aspirant_vector, sp_vector) * 100, 1)
+        fit_pct  = round(mean_centered_cosine(aspirant_vector, sp_vector) * 100, 1)
         matched, mismatched = get_matched_mismatched(aspirant_scores, sp_scores)
 
         results.append({

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(curl -s http://localhost:8001/)",
+      "Bash(curl -s http://localhost:8001/questions)",
+      "Bash(curl -s -X POST http://localhost:8001/branch-fit -H 'Content-Type: application/json' -d '{\"answers\": __TRACKED_VAR__}')",
+      "Bash(npm run *)",
+      "Bash(echo \"frontend pid: $!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npx next *)",
+      "Bash(echo \"pid: $!\")",
+      "Bash(curl -s -o /dev/null -w \"http_status:%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"status:%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(node_modules/.bin/next --version)",
+      "Bash(cp -r /mnt/c/Web-apps/StartUp/resilink-branch-fit-score/frontend /tmp/resilink-frontend)",
+      "Bash(rm -rf /tmp/resilink-frontend/node_modules)",
+      "Bash(ln -s /mnt/c/Web-apps/StartUp/resilink-branch-fit-score/frontend/node_modules /tmp/resilink-frontend/node_modules)",
+      "Bash(curl -s -o /dev/null -w \"status:%{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(NEXT_TELEMETRY_DISABLED=1 node_modules/.bin/next build)",
+      "Bash(git *)"
+    ]
+  }
+}
