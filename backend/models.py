@@ -1,14 +1,15 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import List
+from typing import List, Optional
 
 
 class BranchFitRequest(BaseModel):
-    answers: List[int] = Field(
-        ...,
-        description="Exactly 40 integers, each between 1 and 5 (Likert scale).",
-        min_length=40,
-        max_length=40,
-    )
+    answers: List[int] = Field(..., min_length=40, max_length=40)
+
+    user_id:           Optional[str] = None
+    specialty:         Optional[str] = None
+    was_first_choice:  Optional[bool] = None
+    year_of_residency: Optional[int] = None
+    completion_secs:   Optional[int] = None
 
     @field_validator("answers")
     @classmethod
@@ -22,27 +23,27 @@ class BranchFitRequest(BaseModel):
 
 
 class SpecialtyResult(BaseModel):
-    specialty:         str
-    type:              str
-    fit_score:         float
-    matched_traits:    List[str]
-    mismatched_traits: List[str]
+    specialty:          str
+    type:               str
+    fit_score:          float
+    matched_traits:     List[str]
+    mismatched_traits:  List[str]
 
 
 class DimensionScores(BaseModel):
-    procedural:         float
-    patient_interaction:float
-    work_life_balance:  float
-    stress_tolerance:   float
-    manual_dexterity:   float
-    academic:           float
-    emergency:          float
-    tech_affinity:      float
-    income:             float
-    stamina:            float
+    procedural:          float
+    patient_interaction: float
+    work_life_balance:   float
+    stress_tolerance:    float
+    manual_dexterity:    float
+    academic:            float
+    emergency:           float
+    tech_affinity:       float
+    income:              float
+    stamina:             float
 
 
 class BranchFitResponse(BaseModel):
-    dimension_scores:            DimensionScores
-    top_matches:                 List[SpecialtyResult]
-    total_specialties_evaluated: int = 20
+    dimension_scores:             DimensionScores
+    top_matches:                  List[SpecialtyResult]
+    total_specialties_evaluated:  int = 20
