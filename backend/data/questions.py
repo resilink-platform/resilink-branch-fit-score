@@ -9,6 +9,7 @@ DIMENSIONS = [
     "tech_affinity",
     "income",
     "stamina",
+    "categorical",
 ]
 
 # ---------------------------------------------------------------------------
@@ -286,5 +287,50 @@ QUESTIONS = [
         "text": "Long hours of physical work wear me down quickly.",
         "dimension": "stamina",
         "reverse": True,
+    },
+
+    # ── Categorical (Q41-43) — multipliers, NOT Likert ───────────────────────
+    {
+        "id": 41,
+        "text": "Which work settings appeal to you most? (select all that apply)",
+        "type": "multi_select",
+        "dimension": "categorical",
+        "reverse": False,
+        "options": [
+            {"value": "or_procedures",      "label": "Operating Room / Procedures"},
+            {"value": "icu_emergency",       "label": "ICU / Emergency"},
+            {"value": "opd_clinic",          "label": "OPD / Clinic"},
+            {"value": "lab_microscopy",      "label": "Lab / Microscopy"},
+            {"value": "radiology_console",   "label": "Radiology Console / Reporting"},
+            {"value": "community",           "label": "Community / Field work"},
+        ],
+    },
+    {
+        "id": 42,
+        "text": "Which patient age group do you prefer working with?",
+        "type": "single_select",
+        "dimension": "categorical",
+        "reverse": False,
+        "options": [
+            {"value": "neonates_children",  "label": "Neonates / Children"},
+            {"value": "adults",             "label": "Adults"},
+            {"value": "no_preference",      "label": "Any / No preference"},
+            {"value": "prefer_no_patients", "label": "Prefer minimal patient contact"},
+        ],
+    },
+    {
+        "id": 43,
+        "text": "What does your ideal long-term career look like?",
+        "type": "single_select",
+        "dimension": "categorical",
+        "reverse": False,
+        "options": [
+            {"value": "superspecialization", "label": "Superspecialization (DM/MCh)"},
+            {"value": "private_practice",    "label": "Lucrative private practice"},
+            {"value": "teaching_academics",  "label": "Teaching / Academics"},
+            {"value": "public_health",       "label": "Public health / Community impact"},
+            {"value": "research_industry",   "label": "Research / Industry"},
+            {"value": "entrepreneurship",    "label": "Build my own practice / Startup"},
+        ],
     },
 ]

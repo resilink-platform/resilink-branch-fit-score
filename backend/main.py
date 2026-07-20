@@ -78,8 +78,13 @@ def compute_branch_fit(request: BranchFitRequest):
     Aspirant submits 40 answers → get top 5 specialty matches.
     Result is saved anonymously to Supabase.
     """
+    categorical_answers = {
+        "work_setting": request.work_setting or [],
+        "age_group":    request.age_group or "no_preference",
+        "career_vision": request.career_vision or "",
+    }
     try:
-        result = rank_specialties(request.answers)
+        result = rank_specialties(request.answers, categorical_answers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Scoring error: {str(e)}")
 

@@ -34,20 +34,32 @@ export interface BranchFitResponse {
   total_specialties_evaluated: number;
 }
 
-/** GET /questions — returns the 40 questions in order (id + text only). */
+/** GET /questions — returns the 40 Likert questions only (categorical ones excluded). */
 export async function fetchQuestions(): Promise<Question[]> {
   const res = await fetch(`${API_URL}/questions`);
   if (!res.ok) throw new Error("Couldn't load questions. Is the backend running on " + API_URL + "?");
-  const data: { questions: Array<{ id: number; text: string }> } = await res.json();
-  return data.questions.map((q) => ({ id: q.id, text: q.text }));
+  const data: { questions: Array<{ id: number; text: string; type?: string }> } = await res.json();
+  return data.questions
+    .filter((q) => q.type !== "multi_select" && q.type !== "single_select")
+    .map((q) => ({ id: q.id, text: q.text }));
 }
 
-/** POST /branch-fit — sends 40 answers (each 1–5), returns ranked specialty matches. */
-export async function submitAnswers(answers: number[]): Promise<BranchFitResponse> {
+/** POST /branch-fit — sends 40 answers (each 1–5) plus optional categorical answers. */
+export async function submitAnswers(
+  answers: number[],
+  workSetting?: string[],
+  ageGroup?: string,
+  careerVision?: string,
+): Promise<BranchFitResponse> {
+  const body: Record<string, unknown> = { answers };
+  if (workSetting && workSetting.length > 0) body.work_setting = workSetting;
+  if (ageGroup) body.age_group = ageGroup;
+  if (careerVision) body.career_vision = careerVision;
+
   const res = await fetch(`${API_URL}/branch-fit`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err: { detail?: string } = await res.json().catch(() => ({}));

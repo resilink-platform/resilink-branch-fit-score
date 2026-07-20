@@ -11,6 +11,10 @@ class BranchFitRequest(BaseModel):
     year_of_residency: Optional[int] = None
     completion_secs:   Optional[int] = None
 
+    work_setting:  Optional[List[str]] = None
+    age_group:     Optional[str] = None
+    career_vision: Optional[str] = None
+
     @field_validator("answers")
     @classmethod
     def validate_range(cls, v: List[int]) -> List[int]:

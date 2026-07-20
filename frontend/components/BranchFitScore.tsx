@@ -36,7 +36,7 @@ const SCALE = [
 
 const TYPE_COLOR: Record<string, string> = { MS: "#38bdf8", MD: "#34d399", Para: "#fbbf24", Pre: "#a78bfa" };
 
-type Screen = "landing" | "quiz" | "calculating" | "results" | "error";
+type Screen = "landing" | "quiz" | "categorical" | "calculating" | "results" | "error";
 
 /* ─── Main ──────────────────────────────────────────────────────────── */
 export default function BranchFitScore() {
@@ -47,6 +47,12 @@ export default function BranchFitScore() {
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [results, setResults] = useState<BranchFitResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Categorical Q41–Q43 state
+  const [catStep, setCatStep] = useState(0);
+  const [workSetting, setWorkSetting] = useState<string[]>([]);
+  const [ageGroup, setAgeGroup] = useState("");
+  const [careerVision, setCareerVision] = useState("");
 
   const loadQuestions = useCallback(() => {
     setQLoading(true); setErrorMsg("");
@@ -62,7 +68,7 @@ export default function BranchFitScore() {
     if (screen !== "calculating") return;
     let active = true;
     const start = Date.now();
-    submitAnswers(answers as number[])
+    submitAnswers(answers as number[], workSetting, ageGroup, careerVision)
       .then(async (res) => {
         const wait = Math.max(0, 1600 - (Date.now() - start));
         await new Promise((r) => setTimeout(r, wait));
@@ -76,11 +82,28 @@ export default function BranchFitScore() {
     const next = [...answers]; next[qi] = val; setAnswers(next);
     setTimeout(() => {
       if (qi < questions.length - 1) setQi(qi + 1);
-      else setScreen("calculating");
+      else setScreen("categorical");
     }, 180);
   };
   const back = () => { if (qi > 0) setQi(qi - 1); else setScreen("landing"); };
-  const restart = () => { setAnswers(Array(questions.length).fill(null)); setQi(0); setResults(null); setScreen("landing"); };
+  const restart = () => {
+    setAnswers(Array(questions.length).fill(null));
+    setQi(0);
+    setResults(null);
+    setCatStep(0);
+    setWorkSetting([]);
+    setAgeGroup("");
+    setCareerVision("");
+    setScreen("landing");
+  };
+
+  // Categorical handlers
+  const toggleWorkSetting = (val: string) =>
+    setWorkSetting((prev) => prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]);
+  const continueQ41 = () => setCatStep(1);
+  const selectAgeGroup = (val: string) => { setAgeGroup(val); setTimeout(() => setCatStep(2), 180); };
+  const selectCareerVision = (val: string) => setCareerVision(val);
+  const seeResults = () => setScreen("calculating");
 
   const wrap: CSSProperties = {
     minHeight: "100vh", background: C.bg, fontFamily: FONT, color: C.text,
@@ -107,6 +130,19 @@ export default function BranchFitScore() {
         {screen === "landing" && <Landing loading={qLoading} onStart={() => { setQi(0); setScreen("quiz"); }} />}
         {screen === "quiz" && questions[qi] && (
           <Quiz qi={qi} total={questions.length} q={questions[qi]} selected={answers[qi]} onAnswer={answer} onBack={back} />
+        )}
+        {screen === "categorical" && (
+          <Categorical
+            catStep={catStep}
+            workSetting={workSetting}
+            ageGroup={ageGroup}
+            careerVision={careerVision}
+            onToggleWork={toggleWorkSetting}
+            onContinueWork={continueQ41}
+            onSelectAge={selectAgeGroup}
+            onSelectCareer={selectCareerVision}
+            onSeeResults={seeResults}
+          />
         )}
         {screen === "calculating" && <Calculating />}
         {screen === "results" && results && <Results data={results} onRestart={restart} />}
@@ -217,6 +253,203 @@ function Quiz({ qi, total, q, selected, onAnswer, onBack }: {
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── Categorical (Q41–Q43) ─────────────────────────────────────────── */
+const WORK_OPTS = [
+  { value: "or_procedures",    label: "Operating Room / Procedures" },
+  { value: "icu_emergency",    label: "ICU / Emergency" },
+  { value: "opd_clinic",       label: "OPD / Clinic" },
+  { value: "lab_microscopy",   label: "Lab / Microscopy" },
+  { value: "radiology_console", label: "Radiology Console / Reporting" },
+  { value: "community",        label: "Community / Field work" },
+];
+
+const AGE_OPTS = [
+  { value: "neonates_children",  label: "Neonates / Children" },
+  { value: "adults",             label: "Adults" },
+  { value: "no_preference",      label: "Any / No preference" },
+  { value: "prefer_no_patients", label: "Prefer minimal patient contact" },
+];
+
+const CAREER_OPTS = [
+  { value: "superspecialization", label: "Superspecialization (DM/MCh)" },
+  { value: "private_practice",    label: "Lucrative private practice" },
+  { value: "teaching_academics",  label: "Teaching / Academics" },
+  { value: "public_health",       label: "Public health / Community impact" },
+  { value: "research_industry",   label: "Research / Industry" },
+  { value: "entrepreneurship",    label: "Build my own practice / Startup" },
+];
+
+function Categorical({
+  catStep, workSetting, ageGroup, careerVision,
+  onToggleWork, onContinueWork, onSelectAge, onSelectCareer, onSeeResults,
+}: {
+  catStep: number;
+  workSetting: string[];
+  ageGroup: string;
+  careerVision: string;
+  onToggleWork: (v: string) => void;
+  onContinueWork: () => void;
+  onSelectAge: (v: string) => void;
+  onSelectCareer: (v: string) => void;
+  onSeeResults: () => void;
+}) {
+  const stepPct = ((catStep + 1) / 3) * 100;
+  const stepLabel = `${catStep + 1} of 3`;
+
+  return (
+    <div style={{ paddingTop: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ height: 7, borderRadius: 99, background: "#1b2336", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${stepPct}%`, background: C.cyan, borderRadius: 99, transition: "width .35s ease", boxShadow: "0 0 12px rgba(34,211,238,.6)" }} />
+          </div>
+        </div>
+        <span style={{ color: C.textDim, fontSize: 13, fontWeight: 500, flexShrink: 0, minWidth: 50, textAlign: "right" }}>
+          {stepLabel}
+        </span>
+      </div>
+
+      <div style={{ color: C.cyan, fontSize: 12.5, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", margin: "24px 0 6px" }}>
+        Almost there
+      </div>
+
+      {catStep === 0 && (
+        <div key="q41" className="bfs-fade">
+          <h2 style={{ fontSize: 22, lineHeight: 1.4, fontWeight: 600, margin: "0 0 4px" }}>
+            Which work settings appeal to you most?
+          </h2>
+          <p style={{ color: C.textDim, fontSize: 14, margin: "0 0 20px" }}>Select all that apply</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {WORK_OPTS.map((opt) => {
+              const on = workSetting.includes(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  className="bfs-opt"
+                  onClick={() => onToggleWork(opt.value)}
+                  style={{
+                    padding: "11px 16px", borderRadius: 12, cursor: "pointer",
+                    fontFamily: FONT, fontSize: 14, fontWeight: on ? 600 : 400,
+                    background: on ? C.cyanSoft : C.card,
+                    border: `1.5px solid ${on ? C.cyan : C.border}`,
+                    color: on ? C.text : "#c3ccdb",
+                    boxShadow: on ? "0 0 14px rgba(34,211,238,.2)" : "none",
+                    display: "flex", alignItems: "center", gap: 8,
+                  }}
+                >
+                  {on && <Check size={14} color={C.cyan} />}
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="bfs-cta"
+            onClick={onContinueWork}
+            style={{
+              marginTop: 26, width: "100%", padding: "15px", borderRadius: 12, border: "none", cursor: "pointer",
+              background: C.cyan, color: "#04121a", fontSize: 15.5, fontWeight: 600, fontFamily: FONT,
+              boxShadow: "0 0 22px rgba(34,211,238,.4)",
+            }}
+          >
+            Continue →
+          </button>
+        </div>
+      )}
+
+      {catStep === 1 && (
+        <div key="q42" className="bfs-fade">
+          <h2 style={{ fontSize: 22, lineHeight: 1.4, fontWeight: 600, margin: "0 0 20px" }}>
+            Which patient age group do you prefer working with?
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {AGE_OPTS.map((opt) => {
+              const on = ageGroup === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  className="bfs-opt"
+                  onClick={() => onSelectAge(opt.value)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 12, cursor: "pointer",
+                    textAlign: "left", fontFamily: FONT, background: on ? C.cyanSoft : C.card,
+                    border: `1.5px solid ${on ? C.cyan : C.border}`,
+                    boxShadow: on ? "0 0 18px rgba(34,211,238,.25)" : "none",
+                  }}
+                >
+                  <span style={{
+                    width: 26, height: 26, flexShrink: 0, borderRadius: "50%",
+                    background: on ? C.cyan : "#1b2336",
+                    border: `2px solid ${on ? C.cyan : C.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {on && <Check size={13} color="#04121a" />}
+                  </span>
+                  <span style={{ fontSize: 15.5, color: on ? C.text : "#c3ccdb", fontWeight: on ? 600 : 400 }}>
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {catStep === 2 && (
+        <div key="q43" className="bfs-fade">
+          <h2 style={{ fontSize: 22, lineHeight: 1.4, fontWeight: 600, margin: "0 0 20px" }}>
+            What does your ideal long-term career look like?
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {CAREER_OPTS.map((opt) => {
+              const on = careerVision === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  className="bfs-opt"
+                  onClick={() => onSelectCareer(opt.value)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 12, cursor: "pointer",
+                    textAlign: "left", fontFamily: FONT, background: on ? C.cyanSoft : C.card,
+                    border: `1.5px solid ${on ? C.cyan : C.border}`,
+                    boxShadow: on ? "0 0 18px rgba(34,211,238,.25)" : "none",
+                  }}
+                >
+                  <span style={{
+                    width: 26, height: 26, flexShrink: 0, borderRadius: "50%",
+                    background: on ? C.cyan : "#1b2336",
+                    border: `2px solid ${on ? C.cyan : C.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {on && <Check size={13} color="#04121a" />}
+                  </span>
+                  <span style={{ fontSize: 15.5, color: on ? C.text : "#c3ccdb", fontWeight: on ? 600 : 400 }}>
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="bfs-cta"
+            onClick={onSeeResults}
+            disabled={!careerVision}
+            style={{
+              marginTop: 26, width: "100%", padding: "15px", borderRadius: 12, border: "none",
+              cursor: careerVision ? "pointer" : "default",
+              background: C.cyan, color: "#04121a", fontSize: 15.5, fontWeight: 600, fontFamily: FONT,
+              boxShadow: "0 0 22px rgba(34,211,238,.4)",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+            }}
+          >
+            <Sparkles size={17} /> See my results
+          </button>
+        </div>
+      )}
     </div>
   );
 }
