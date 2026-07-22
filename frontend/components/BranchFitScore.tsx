@@ -104,6 +104,10 @@ export default function BranchFitScore() {
   const selectAgeGroup = (val: string) => { setAgeGroup(val); setTimeout(() => setCatStep(2), 180); };
   const selectCareerVision = (val: string) => setCareerVision(val);
   const seeResults = () => setScreen("calculating");
+  const catBack = () => {
+    if (catStep > 0) setCatStep(catStep - 1);
+    else { setQi(questions.length - 1); setScreen("quiz"); }
+  };
 
   const wrap: CSSProperties = {
     minHeight: "100vh", background: C.bg, fontFamily: FONT, color: C.text,
@@ -142,6 +146,7 @@ export default function BranchFitScore() {
             onSelectAge={selectAgeGroup}
             onSelectCareer={selectCareerVision}
             onSeeResults={seeResults}
+            onBack={catBack}
           />
         )}
         {screen === "calculating" && <Calculating />}
@@ -285,7 +290,7 @@ const CAREER_OPTS = [
 
 function Categorical({
   catStep, workSetting, ageGroup, careerVision,
-  onToggleWork, onContinueWork, onSelectAge, onSelectCareer, onSeeResults,
+  onToggleWork, onContinueWork, onSelectAge, onSelectCareer, onSeeResults, onBack,
 }: {
   catStep: number;
   workSetting: string[];
@@ -296,6 +301,7 @@ function Categorical({
   onSelectAge: (v: string) => void;
   onSelectCareer: (v: string) => void;
   onSeeResults: () => void;
+  onBack: () => void;
 }) {
   const stepPct = ((catStep + 1) / 3) * 100;
   const stepLabel = `${catStep + 1} of 3`;
@@ -303,6 +309,10 @@ function Categorical({
   return (
     <div style={{ paddingTop: 6 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+        <button className="bfs-ghost" onClick={onBack} aria-label="Back" style={{
+          padding: "6px 12px", borderRadius: 10, background: C.card, border: `1px solid ${C.border}`, color: C.textDim, cursor: "pointer",
+          fontSize: 13, fontFamily: FONT, flexShrink: 0,
+        }}>← Back</button>
         <div style={{ flex: 1 }}>
           <div style={{ height: 7, borderRadius: 99, background: "#1b2336", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${stepPct}%`, background: C.cyan, borderRadius: 99, transition: "width .35s ease", boxShadow: "0 0 12px rgba(34,211,238,.6)" }} />
