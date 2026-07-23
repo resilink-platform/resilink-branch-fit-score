@@ -44,6 +44,46 @@ export async function fetchQuestions(): Promise<Question[]> {
     .map((q) => ({ id: q.id, text: q.text }));
 }
 
+/** POST /resident/submit — sends 40 answers plus resident identity and golden question data. */
+export async function submitResidentAnswers(
+  answers: number[],
+  specialty: string,
+  yearOfResidency: number,
+  wasFirstChoice: boolean,
+  instituteType: string,
+  wouldChooseAgain: string,
+  workloadReality: string,
+  workSetting?: string[],
+  ageGroup?: string,
+  careerVision?: string,
+): Promise<BranchFitResponse> {
+  const body: Record<string, unknown> = {
+    answers,
+    user_id: "resident_anonymous",
+    specialty,
+    year_of_residency: yearOfResidency,
+    was_first_choice: wasFirstChoice,
+    institute_type: instituteType,
+    would_choose_again: wouldChooseAgain,
+    workload_reality: workloadReality,
+  };
+  if (workSetting && workSetting.length > 0) body.work_setting = workSetting;
+  if (ageGroup) body.age_group = ageGroup;
+  if (careerVision) body.career_vision = careerVision;
+
+  console.log("[resident/submit] body →", JSON.stringify(body, null, 2));
+  const res = await fetch(`${API_URL}/resident/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err: { detail?: string } = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? "Something went wrong submitting your response.");
+  }
+  return res.json();
+}
+
 /** POST /branch-fit — sends 40 answers (each 1–5) plus optional categorical answers. */
 export async function submitAnswers(
   answers: number[],

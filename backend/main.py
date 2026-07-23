@@ -100,6 +100,7 @@ def compute_branch_fit(request: BranchFitRequest):
             "top_matches":      result["top_matches"],
             "is_complete":      True,
             "completion_secs":  request.completion_secs,
+            "specialty_name":   None,
         }).execute()
         print(f"[DB] execute() returned: type={type(res).__name__} value={res!r}", flush=True)
         # supabase-py v1 surfaces errors in res.error rather than raising
@@ -133,8 +134,13 @@ def resident_submit(request: BranchFitRequest):
     if not request.specialty:
         raise HTTPException(status_code=400, detail="specialty is required for resident submissions.")
 
+    categorical_answers = {
+        "work_setting":  request.work_setting or [],
+        "age_group":     request.age_group or "no_preference",
+        "career_vision": request.career_vision or "",
+    }
     try:
-        result = rank_specialties(request.answers)
+        result = rank_specialties(request.answers, categorical_answers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Scoring error: {str(e)}")
 
@@ -143,7 +149,8 @@ def resident_submit(request: BranchFitRequest):
             "user_id":            request.user_id,
             "respondent_type":    "resident",
             "schema_version":     "v1",
-            "specialty_id":       request.specialty,
+            "specialty_id":       None,
+            "specialty_name":     request.specialty,
             "raw_answers":        request.answers,
             "dimension_scores":   result["dimension_scores"],
             "top_matches":        result["top_matches"],
@@ -151,14 +158,18 @@ def resident_submit(request: BranchFitRequest):
             "year_of_residency":  request.year_of_residency,
             "completion_secs":    request.completion_secs,
             "is_complete":        True,
+            "would_choose_again": request.would_choose_again,
+            "workload_reality":   request.workload_reality,
+            "institute_type":     request.institute_type,
         }).execute()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
 
-    return {
-        "message": "Submitted successfully. Thank you for contributing to Resilink!",
-        "your_result": result,
-    }
+    return BranchFitResponse(
+        dimension_scores=DimensionScores(**result["dimension_scores"]),
+        top_matches=[SpecialtyResult(**r) for r in result["top_matches"]],
+        total_specialties_evaluated=20,
+    )
 
 
 # ── Admin — compute empirical profiles ───────────────────────────────────────
